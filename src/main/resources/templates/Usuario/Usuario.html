@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="layout::head">
+    <meta charset="UTF-8">
+    <title>Usuario</title>
+</head>
+<body>
+<div th:insert="layout::upperSide" ></div>
+<nav th:insert="layout::menu"></nav>
+
+<div class="page-wrapper">
+
+    <!-- Page Content -->
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Usuarios</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Usuarios</li>
+                    </ul>
+                </div>
+                <div class="col-auto float-right ml-auto">
+                    <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_usuario"><i class="fa fa-plus"></i> Agregar Usuario</a>
+                    <div class="view-icons">
+                        <a href="#" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
+                        <a href="#" class="list-view btn btn-link active"><i class="fa fa-bars"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Search Filter -->
+        <div class="row filter-row m-b-10">
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <input id="nombre" type="text" class="form-control floating">
+                    <label class="focus-label">Nombre</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <input id="apellido" type="text" class="form-control floating">
+                    <label class="focus-label">Apellido</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <input id="email" type="email" class="form-control floating">
+                    <label class="focus-label">Email</label>
+                </div>
+                
+                <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <input id="contraseña" type="password" class="form-control floating">
+                    <label class="focus-label">Contraseña</label>
+                </div>
+                
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <a href="#" class="btn btn-success btn-block" onclick="buscarUsuarios()">Buscar</a>
+            </div>
+
+        </div>
+        <!-- Search Filter -->
+
+        <script>
+            function buscarProductos() {
+                var nombre = $("#nombre").val();
+                var apellido = $("#apellido").val();
+                var email = $("#email").val();
+                var contraseña = $("#contraseña").val();
+
+                var request = {
+                    nombre: nombre,
+                    apellifo: apellido,
+                    email: email,
+                    contraseña: contraseña
+                };
+
+                $.ajax({
+                    url: "/Usuario/consultar",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(request),
+
+                    success: function(response) {
+                        // Update the table with the fetched data
+                        console.log(response);
+                        console.log(estado);
+
+                        $("#usuarios-table tbody").html(response);
+                    },
+                    error: function(xhr, status, error) {
+
+                        console.log("Error occurred while searching: " + error);
+                    }
+                });
+            }
+
+
+        </script>
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped custom-table datatable" id="productos-table">
+                <thead>
+                <tr>
+
+                    <th>ID Usuario</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>Email</th>
+                    <th>Contraseña</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="usuario : ${lstUsuarios}">
+
+                    <td th:text="${usuario.idusu}"></td>
+                    <td th:text="${usuario.nombre}"></td>
+                    <td th:text="${usuario.apellido}"></td>
+                    <td th:text="${usuario.email}" ></td>
+                    <td th:text="${usuario.contraseña}"></td>
+                    <td class="text-right">
+                        <div class="dropdown dropdown-action">
+                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item update-btn" href="#" data-toggle="modal"  data-target="#update_producto" th:data-id="${producto.idprod}"> Editar</a>
+                                <a class="dropdown-item delete-btn" th:href="@{/deleteProducto/{idprod}(idprod=${producto.idprod})}" data-toggle="modal" th:data-id="${producto.idprod}"> Borrar</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                    <script>
+                        $(document).ready(function() {
+                            $('.delete-btn').on('click', function(e) {
+                                e.preventDefault();
+                                var idusu = $(this).data('id');
+
+                                // Muestra la confirmacion para borrar
+                                var confirmDelete = confirm("Esta seguro que desea borrar ese producto?");
+
+                                // procede con el brorrado si el usuaio confirma
+                                if (confirmDelete) {
+                                    // Hacer con AJAX un request para el delete endpoint
+                                    $.ajax({
+                                        url: '/Usuario/deleteUsuario/' + idusu,
+                                        type: 'GET',
+                                        success: function(response) {
+                                            // Manejo del delete (opcional)
+                                            console.log('Delete request successful');
+
+
+                                            // redirecionar a la lista de productos
+                                            window.location.href = '/Usuario/listadoUsuarios';
+                                        },
+                                        error: function(xhr, status, error) {
+                                            // en caso de error
+                                            console.log('Error occurred while deleting: ' + error);
+
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        $(document).ready(function() {
+                            $('.update-btn').on('click', function(e) {
+                                e.preventDefault();
+                                var idusu = $(this).data('id');
+
+                                // Hacer con AJAX un request to fetch the product details
+                                $.ajax({
+                                    url: '/Usuario/updateUsuario/' + idusu,
+                                    type: 'GET',
+                                    success: function(response) {
+                                        // Manejo de  success response
+                                        console.log(response);
+                                        console.log('Update request successful');
+
+                                        // Cargar the modal con los  product details
+                                        $('#update_usuario').find('input[name="idusu"]').val(response.idusu);
+                                        $('#update_usuario').find('input[name="nombre"]').val(response.nombre);
+                                        $('#update_usuario').find('input[name="apellido"]').val(response.apellido);
+                                        $('#update_usuario').find('input[name="email"]').val(response.email);
+                                        $('#update_usuario').find('input[name="contraseña"]').val(response.contraseña);
+
+                                        // Mostrar the modal
+                                        $('#update_usuario').modal('show');
+
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // Manejo de error error response
+                                        console.log(idusu);
+                                        console.log('Error occurred while updating: ' + error);
+
+                                    }
+                                });
+                            });
+                        });
+
+                    </script>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+
+
+<!-- Agregar Usuario Modal -->
+<div id="add_usuario" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" >
+                <form th:action="@{saveUsuario}" th:object="${usuario}" method="POST">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Nombres <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" th:field="*{nombre}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Apellidos</label>
+                                <input class="form-control" type="text" th:field="*{apellido}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Email <span class="text-danger">*</span></label>
+                                <input class="form-control" type="email" pattern="[0-9]{9}" th:field="*{email}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                        <div class="form-group">
+                            <label class="col-form-label">Contraseña <span class="text-danger">*</span></label>
+                            <input class="form-control" type="password" pattern="[0-9]{11}" th:field="*{contraseña}">
+                        </div>
+                    </div>                                           
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Agregar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Add Usuario Modal -->
+
+<!-- Update Usuario Modal -->
+<div id="update_producto" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" >
+                <form th:action="@{saveUsuario}" th:object="${usuario}" method="POST">
+                    <div class="row">
+                    <input type="hidden"   th:field="*{idusu}" />
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Nombre <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" th:field="*{nombre}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Apellido</label>
+                                <input class="form-control" type="text" th:field="*{apellido}">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Email <span class="text-danger">*</span></label>
+                                <input class="form-control" type="email" pattern="[0-9]{9}" th:field="*{email}">
+                            </div>
+                        </div>        
+                        <div class="col-sm-6">
+                        <div class="form-group">
+                            <label class="col-form-label">Contraseña <span class="text-danger">*</span></label>
+                            <input class="form-control" type="password" pattern="[0-9]{11}" th:field="*{contraseña}">
+                        </div>
+                    </div>        
+                         
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Add Producto Modal -->
+
+</body>
+</html>
